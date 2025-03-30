@@ -58,9 +58,12 @@ jobs:
           # Pull latest image
           docker pull $REGISTRY/$REPO:$TAG
 
-          # Stop and remove old container
+          # Kill any process using port 8000
+          sudo fuser -k 8000/tcp || true
+
+          # Stop and remove old container if exists
           docker stop health-monitor || true
           docker rm health-monitor || true
 
-          # Run new container
+          # Run new container on port 8000
           docker run -d --name health-monitor -p 8000:8000 $REGISTRY/$REPO:$TAG
