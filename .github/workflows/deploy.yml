@@ -27,10 +27,3 @@ jobs:
           python manage.py collectstatic --noinput
           pkill gunicorn || true
           nohup gunicorn --bind 0.0.0.0:8000 health_monitor.wsgi:application > gunicorn.log 2>&1 &
-
-
-
-
-
-
-
