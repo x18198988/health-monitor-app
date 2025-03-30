@@ -19,8 +19,9 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd ~/health-monitor-app/health_monitor
+          cd ~/health-monitor-app  
           git pull origin main
+          cd health_monitor         
           source venv/bin/activate
           pip install -r requirements.txt
           python manage.py migrate
