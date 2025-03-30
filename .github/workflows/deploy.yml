@@ -28,9 +28,17 @@ jobs:
             cd health-monitor-app
           fi
 
+          # Create virtual environment with Python 3.11 if not exists
+          if [ ! -d "venv" ]; then
+            python3.11 -m venv venv
+          fi
+
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
+
           python manage.py migrate
           python manage.py collectstatic --noinput
+
           pkill gunicorn || true
-          nohup gunicorn --bind 0.0.0.0:8000 health_monitor.wsgi:application > gunicorn.log 2>&1 &
+          nohup venv/bin/gunicorn --bind 0.0.0.0:8000 health_monitor.wsgi:application > gunicorn.log 2>&1 &
