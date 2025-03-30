@@ -1,0 +1,8 @@
+{% extends "base_generic.html" %}
+{% block content %}
+  <div class="container mt-5 text-center">
+    <h3><i class="bi bi-box-arrow-right"></i> You’ve been logged out.</h3>
+    <p>Thanks for using the Health Monitor app!</p>
+    <a href="{% url 'login' %}" class="btn btn-primary mt-3">Login Again</a>
+  </div>
+{% endblock %}
