@@ -14,37 +14,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: 📦 Checkout code
       uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
+    - name: 🔐 Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: Login to Amazon ECR
+    - name: 🔐 Login to Amazon ECR
       run: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-    - name: Build Docker image
+    - name: 🛠️ Build Docker image
       run: |
         docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
         docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Push image to Amazon ECR
+    - name: 🚀 Push image to Amazon ECR
       run: |
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Deploy on EC2 (pull latest image & run)
+    - name: 🖥️ Deploy on EC2 (pull latest image & run)
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker stop health-monitor || true && docker rm health-monitor || true
-          docker run -d --name health-monitor -p 8000:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          REGISTRY="262007030260.dkr.ecr.us-east-1.amazonaws.com"
+          REPO="health-monitor-app"
+          TAG="latest"
+
+          # Optional: activate Python virtualenv if needed
+          # source ~/venv/bin/activate
+
+          # Authenticate with ECR
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $REGISTRY
+
+          # Pull latest image
+          docker pull $REGISTRY/$REPO:$TAG
+
+          # Stop old container if running
+          docker stop health-monitor || true
+          docker rm health-monitor || true
+
+          # Run new container
+          docker run -d --name health-monitor -p 8000:8000 $REGISTRY/$REPO:$TAG
