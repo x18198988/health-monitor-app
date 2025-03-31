@@ -48,38 +48,37 @@
 
 <body>
   <!-- 🌐 Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-light shadow-sm" style="background-color: rgba(255,255,255,0.9); backdrop-filter: blur(6px);">
     <div class="container-fluid d-flex justify-content-between">
-      <a class="navbar-brand" href="#"><i class="bi bi-heart-pulse-fill"></i> Health Monitor</a>
-      
+      <a class="navbar-brand text-dark" href="#"><i class="bi bi-heart-pulse-fill me-1"></i> Health Monitor</a>
+  
       <div class="d-flex align-items-center">
-        <!-- 🌙 Dark/Light Toggle -->
-        <button onclick="toggleTheme()" class="btn btn-sm btn-outline-light me-3">
+        <button onclick="toggleTheme()" class="btn btn-sm btn-outline-dark me-3">
           <i class="bi bi-moon-stars-fill"></i> Toggle Theme
         </button>
-
-        <!-- 👤 User Info & Auth -->
+  
         {% if user.is_authenticated %}
-          <span class="navbar-text text-white me-3">
+          <span class="navbar-text text-dark me-3">
             <i class="bi bi-person-circle"></i> {{ user.username }}
           </span>
           <form method="post" action="{% url 'logout' %}" class="d-inline">
             {% csrf_token %}
-            <button class="btn btn-outline-light btn-sm" type="submit">
+            <button class="btn btn-outline-dark btn-sm" type="submit">
               <i class="bi bi-box-arrow-right"></i> Logout
             </button>
           </form>
         {% else %}
-          <a class="btn btn-light btn-sm me-2" href="{% url 'login' %}">
+          <a class="btn btn-outline-dark btn-sm me-2" href="{% url 'login' %}">
             <i class="bi bi-box-arrow-in-right"></i> Login
           </a>
-          <a class="btn btn-outline-light btn-sm" href="{% url 'signup' %}">
+          <a class="btn btn-outline-dark btn-sm" href="{% url 'signup' %}">
             <i class="bi bi-person-plus-fill"></i> Sign Up
           </a>
         {% endif %}
       </div>
     </div>
   </nav>
+  
 
   <!-- 📄 Page Content -->
   <div class="container mt-4">
