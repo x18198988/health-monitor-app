@@ -16,19 +16,49 @@
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- 🌈 Animated Gradient Background -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(-45deg, #00b4d8, #90e0ef, #0077b6, #caf0f8);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Optional: Improve readability of cards and navbar */
+    .card, .navbar {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(6px);
+    }
+
+    /* Optional: Give the toast a little blur too */
+    .toast-container {
+      z-index: 9999;
+    }
+  </style>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <!-- 🌐 Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid d-flex justify-content-between">
       <a class="navbar-brand" href="#"><i class="bi bi-heart-pulse-fill"></i> Health Monitor</a>
       
       <div class="d-flex align-items-center">
+        <!-- 🌙 Dark/Light Toggle -->
         <button onclick="toggleTheme()" class="btn btn-sm btn-outline-light me-3">
           <i class="bi bi-moon-stars-fill"></i> Toggle Theme
         </button>
 
+        <!-- 👤 User Info & Auth -->
         {% if user.is_authenticated %}
           <span class="navbar-text text-white me-3">
             <i class="bi bi-person-circle"></i> {{ user.username }}
@@ -51,21 +81,20 @@
     </div>
   </nav>
 
-  <!-- Page Content -->
+  <!-- 📄 Page Content -->
   <div class="container mt-4">
     {% block content %}{% endblock %}
   </div>
 
-  <!-- Dark Mode Script -->
+  <!-- 🌓 Dark Mode Script -->
   <script>
     const toggleTheme = () => {
-      document.body.classList.toggle('bg-dark');
       document.body.classList.toggle('text-light');
-      localStorage.setItem('theme', document.body.classList.contains('bg-dark') ? 'dark' : 'light');
+      localStorage.setItem('theme', document.body.classList.contains('text-light') ? 'dark' : 'light');
     };
     window.onload = () => {
       if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('bg-dark', 'text-light');
+        document.body.classList.add('text-light');
       }
     };
   </script>
