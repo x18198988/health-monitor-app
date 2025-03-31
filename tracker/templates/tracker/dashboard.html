@@ -1,61 +1,141 @@
 {% extends "base_generic.html" %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-<body>
-  <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
-      <a href="{% url 'add_data' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add Data
+<div class="container py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary animate__animated animate__fadeInLeft">
+      <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </h2>
+    <div class="animate__animated animate__fadeInRight">
+      <a href="{% url 'add_data' %}" class="btn btn-success me-2">
+        <i class="bi bi-plus-circle me-1"></i>Add Data
+      </a>
+      <a href="{% url 'export_csv' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-cloud-upload me-1"></i>Export & Upload
       </a>
     </div>
+  </div>
 
-    {% if analysis %}
-      <div class="alert alert-info">
-        <h5><i class="bi bi-activity"></i> Wellness Summary</h5>
-        <p>Score: <strong>{{ analysis.score }}</strong></p>
-        <p>Category: <strong>{{ analysis.category }}</strong></p>
-      </div>
-    {% endif %}
+  <!-- 📅 Date Filter -->
+  <div class="d-flex mb-4 gap-3 flex-wrap">
+    <button class="btn btn-outline-primary btn-sm">Last 7 Days</button>
+    <button class="btn btn-outline-primary btn-sm">This Month</button>
+    <input id="custom-date" class="form-control form-control-sm" placeholder="Select Date Range" style="max-width: 200px;" />
+  </div>
 
-    <a href="{% url 'export_csv' %}" class="btn btn-outline-secondary">
-      <i class="bi bi-cloud-upload"></i> Export & Upload to S3
-    </a>    
+  <!-- 📊 Chart Section -->
+  {% if data %}
+  <div class="card mb-4 shadow-sm animate__animated animate__fadeIn">
+    <div class="card-body">
+      <canvas id="healthChart" height="100"></canvas>
+    </div>
+  </div>
+  {% endif %}
 
-    {% if data %}
-      <div class="row row-cols-1 row-cols-md-2 g-4">
-        {% for item in data %}
-          <div class="col">
-            <div class="card shadow-sm border-0">
-              <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-calendar-event"></i> {{ item.date }}</h5>
-                <p class="card-text mb-1">
-                  <i class="bi bi-shoe-print"></i> <strong>Steps:</strong> {{ item.steps }}
-                </p>
-                <p class="card-text mb-1">
-                  <i class="bi bi-moon-stars-fill"></i> <strong>Sleep:</strong> {{ item.sleep_hours }} hrs
-                </p>
-                <p class="card-text">
-                  <i class="bi bi-fire"></i> <strong>Calories:</strong> {{ item.calories }}
-                </p>
-              </div>
+  <!-- 🧠 Summary -->
+  {% if analysis %}
+    <div class="alert alert-info border-start border-5 border-primary shadow-sm animate__animated animate__fadeInUp">
+      <h5 class="mb-2"><i class="bi bi-activity me-2"></i>Wellness Summary</h5>
+      <p class="mb-1">
+        Score: 
+        <span class="badge bg-success">{{ analysis.score }}</span>
+      </p>
+      <p class="mb-0">
+        Category: 
+        <span class="badge {% if analysis.category == 'Excellent' %}bg-primary{% elif analysis.category == 'Good' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+          {{ analysis.category }}
+        </span>
+      </p>
+    </div>
+  {% endif %}
+
+  <!-- 📋 Data Cards -->
+  {% if data %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+      {% for item in data %}
+        <div class="col animate__animated animate__fadeInUp">
+          <div class="card h-100 shadow-sm border-light">
+            <div class="card-header bg-light">
+              <i class="bi bi-calendar-event me-1"></i>{{ item.date }}
+            </div>
+            <div class="card-body">
+              <p class="card-text mb-2 text-success">
+                <i class="bi bi-shoe-print me-2"></i><strong>Steps:</strong> {{ item.steps }}
+              </p>
+              <p class="card-text mb-2 text-info">
+                <i class="bi bi-moon-stars-fill me-2"></i><strong>Sleep:</strong> {{ item.sleep_hours }} hrs
+              </p>
+              <p class="card-text text-danger">
+                <i class="bi bi-fire me-2"></i><strong>Calories:</strong> {{ item.calories }}
+              </p>
             </div>
           </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="alert alert-info text-center" role="alert">
-        <i class="bi bi-info-circle"></i> No data available yet. Start by adding some!
-      </div>
-    {% endif %}
-  </div>
-</body>
-</html>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning text-center mt-4 shadow-sm animate__animated animate__fadeIn">
+      <i class="bi bi-info-circle-fill me-2"></i>No data available yet. Start by adding some!
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Chart Script -->
+{% if data %}
+<script>
+  const labels = [{% for item in data %}"{{ item.date }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+  const steps = [{% for item in data %}{{ item.steps }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const sleep = [{% for item in data %}{{ item.sleep_hours }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const calories = [{% for item in data %}{{ item.calories }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  const ctx = document.getElementById('healthChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Steps',
+          data: steps,
+          borderColor: 'green',
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Sleep Hours',
+          data: sleep,
+          borderColor: 'blue',
+          fill: false,
+          tension: 0.3
+        },
+        {
+          label: 'Calories',
+          data: calories,
+          borderColor: 'orange',
+          fill: false,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: true, text: 'Health Trends Over Time' }
+      }
+    }
+  });
+</script>
+{% endif %}
+
+<!-- Flatpickr Init -->
+<script>
+  flatpickr("#custom-date", {
+    mode: "range",
+    dateFormat: "Y-m-d"
+  });
+</script>
+
 {% endblock %}
