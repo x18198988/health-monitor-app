@@ -108,4 +108,28 @@ def export_csv(request):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
     
+from django.shortcuts import get_object_or_404
+from django.contrib import messages
+
+@login_required
+def edit_data(request, pk):
+    data = get_object_or_404(HealthData, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = HealthDataForm(request.POST, instance=data)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Data updated successfully!')
+            return redirect('dashboard')
+    else:
+        form = HealthDataForm(instance=data)
+    return render(request, 'tracker/add_data.html', {'form': form})
+
+@login_required
+def delete_data(request, pk):
+    data = get_object_or_404(HealthData, pk=pk, user=request.user)
+    if request.method == 'POST':
+        data.delete()
+        messages.success(request, 'Data deleted successfully!')
+        return redirect('dashboard')
+    return render(request, 'tracker/confirm_delete.html', {'data': data})
 
